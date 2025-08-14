@@ -6,34 +6,44 @@
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     body { font-family: Arial; text-align: center; margin-top: 20px; }
-    #reader { width: 300px; margin: auto; }
+    #reader { width: 300px; margin: auto; display: none; }
+    input, button { padding: 10px; font-size: 16px; margin: 10px; }
     h2 { margin-bottom: 20px; }
   </style>
 </head>
 <body>
 
-<h2>Scanner un QR Code</h2>
+<h2>Scanner un QR Code ou saisir manuellement</h2>
+
+<input type="text" id="manualInput" placeholder="Tapez le code ici si pas de QR" />
+<br>
+<button onclick="startScan()">Démarrer le scan QR</button>
+<button onclick="submitForm()">Ouvrir le formulaire</button>
+
 <div id="reader"></div>
 
 <script>
-  // ID du champ texte dans Google Forms
-  const formFieldId = "entry.1354228723";
-
-  // URL de ton Google Forms (sans valeur pré-remplie)
+  const formFieldId = "entry.1354228723"; // ID du champ dans Google Forms
   const formBaseUrl = "https://docs.google.com/forms/d/e/1FAIpQLSftPmiCxMLhDjjn4MZ3E1ILwAQ1y5i1glQRHKbzaw8NKUPzxA/viewform?usp=pp_url";
 
-  function onScanSuccess(decodedText) {
-    // Redirige vers le formulaire avec le champ pré-rempli
-    const finalUrl = `${formBaseUrl}&${formFieldId}=${encodeURIComponent(decodedText)}`;
-    window.location.href = finalUrl;
+  function startScan() {
+    document.getElementById("reader").style.display = "block";
+    const html5QrCode = new Html5Qrcode("reader");
+    html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: 250 },
+      decodedText => {
+        document.getElementById("manualInput").value = decodedText;
+        html5QrCode.stop(); // Arrête le scan après lecture
+      }
+    );
   }
 
-  const html5QrCode = new Html5Qrcode("reader");
-  html5QrCode.start(
-    { facingMode: "environment" },  // caméra arrière
-    { fps: 10, qrbox: 250 },
-    onScanSuccess
-  );
+  function submitForm() {
+    const value = document.getElementById("manualInput").value || "";
+    const finalUrl = `${formBaseUrl}&${formFieldId}=${encodeURIComponent(value)}`;
+    window.location.href = finalUrl;
+  }
 </script>
 
 </body>
