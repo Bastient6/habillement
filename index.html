@@ -2,11 +2,11 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Scanner QR / Code-barres → Google Forms</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+  <title>Scan QR / Code-barres → Google Forms</title>
+  <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
   <style>
     body { font-family: Arial; text-align: center; margin-top: 20px; }
-    #scanner { width: 90%; max-width: 400px; margin: auto; display: none; }
+    #video { width: 90%; max-width: 400px; border: 1px solid #ccc; margin-bottom: 10px; }
     #manualInput { 
       padding: 15px; font-size: 24px; width: 90%; max-width: 400px; 
       box-sizing: border-box; margin-bottom: 10px;
@@ -17,48 +17,29 @@
 </head>
 <body>
 
-<h2>Scanner un QR Code ou code-barres / Saisie manuelle</h2>
+<h2>Scanner un QR Code ou Code-barres / Saisie manuelle</h2>
 
 <input type="text" id="manualInput" placeholder="Tapez le code ici si pas de scan" />
 <br>
 <button onclick="startScanner()">Démarrer le scan</button>
-<button onclick="submitForm()">suivant</button>
-
-<div id="scanner"></div>
+<button onclick="submitForm()">Ouvrir le formulaire</button>
+<br>
+<video id="video" autoplay></video>
 
 <script>
+  const codeReader = new ZXing.BrowserMultiFormatReader();
+  const videoElement = document.getElementById('video');
+
   const formFieldId = "entry.1354228723"; 
   const formBaseUrl = "https://docs.google.com/forms/d/e/1FAIpQLSftPmiCxMLhDjjn4MZ3E1ILwAQ1y5i1glQRHKbzaw8NKUPzxA/viewform?usp=pp_url";
 
   function startScanner() {
-    document.getElementById("scanner").style.display = "block";
-
-    Quagga.init({
-      inputStream: {
-        name: "Live",
-        type: "LiveStream",
-        target: document.querySelector('#scanner'),
-        constraints: {
-          facingMode: "environment" // arrière caméra
-        }
-      },
-      decoder: {
-        readers: ["code_128_reader", "ean_reader", "ean_8_reader", "upc_reader", "upc_e_reader", "code_39_reader", "codabar_reader", "qr_reader"]
+    codeReader.decodeFromVideoDevice(null, 'video', (result, err) => {
+      if (result) {
+        document.getElementById("manualInput").value = result.text;
+        codeReader.reset(); // stop le scan
       }
-    }, function(err) {
-      if (err) {
-        console.error(err);
-        alert("Erreur caméra : " + err);
-        return;
-      }
-      Quagga.start();
-    });
-
-    Quagga.onDetected(function(result) {
-      const code = result.codeResult.code;
-      document.getElementById("manualInput").value = code;
-      Quagga.stop();
-      document.getElementById("scanner").style.display = "none";
+      // sinon on ignore les erreurs pour continuer le scan
     });
   }
 
