@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Scan QR Code → Google Forms</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body { font-family: Arial; text-align: center; margin-top: 20px; }
+    #reader { width: 300px; margin: auto; }
+    h2 { margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+
+<h2>Scanner un QR Code</h2>
+<div id="reader"></div>
+
+<script>
+  // ID du champ texte dans Google Forms
+  const formFieldId = "entry.1354228723";
+
+  // URL de ton Google Forms (sans valeur pré-remplie)
+  const formBaseUrl = "https://docs.google.com/forms/d/e/1FAIpQLSftPmiCxMLhDjjn4MZ3E1ILwAQ1y5i1glQRHKbzaw8NKUPzxA/viewform?usp=pp_url";
+
+  function onScanSuccess(decodedText) {
+    // Redirige vers le formulaire avec le champ pré-rempli
+    const finalUrl = `${formBaseUrl}&${formFieldId}=${encodeURIComponent(decodedText)}`;
+    window.location.href = finalUrl;
+  }
+
+  const html5QrCode = new Html5Qrcode("reader");
+  html5QrCode.start(
+    { facingMode: "environment" },  // caméra arrière
+    { fps: 10, qrbox: 250 },
+    onScanSuccess
+  );
+</script>
+
+</body>
+</html>
